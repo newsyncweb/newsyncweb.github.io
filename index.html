@@ -1,78 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>NEWSYNC - The Future is Weird</title>
-  <style>
-    body {
-      background: url('https://www.transparenttextures.com/patterns/80s-memphis.png'); /* optional tile bg */
-      color: #00ff00;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      text-align: center;
-      margin: 0;
-    }
-    h1 {
-      background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-size: 48px;
-      margin-top: 20px;
-    }
-    .marquee {
-      background-color: yellow;
-      color: red;
-      font-weight: bold;
-      padding: 5px;
-      margin: 10px;
-    }
-    .content {
-      padding: 20px;
-      border: 5px dashed magenta;
-      margin: 20px;
-    }
-    .gif {
-      margin-top: 10px;
-    }
-    .counter {
-      font-size: 14px;
-      color: white;
-      margin-top: 30px;
-    }
-    a {
-      color: cyan;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Game Assets to ImgBB</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        input[type="text"], input[type="file"], button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .uploaded-info {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 5px;
+        }
+        .uploaded-info h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .uploaded-info img {
+            max-width: 300px;
+            margin: 10px;
+        }
+        .uploaded-info .links {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        .status {
+            margin-top: 20px;
+            font-weight: bold;
+            color: red;
+        }
+    </style>
 </head>
 <body>
 
-  <marquee class="marquee">👾 Welcome to NEWSYNC — Your Portal to the Unusual! 👾</marquee>
+    <div class="container">
+        <h1>Upload Game Assets to ImgBB</h1>
 
-  <h1>🔥 NEWSYNC 🔥</h1>
+        <div class="form-section">
+            <form id="uploadForm">
+                <label for="gameName">Game Name</label>
+                <input type="text" id="gameName" placeholder="Enter the game's name" required>
+                
+                <label for="spriteSheet">Upload Sprite Sheet</label>
+                <input type="file" id="spriteSheet" accept="image/*" required>
+                
+                <label for="thumbnail">Upload Thumbnail</label>
+                <input type="file" id="thumbnail" accept="image/*" required>
+                
+                <button type="submit">Upload</button>
+            </form>
+        </div>
 
-  <div class="content">
-    <p>Hey visitor! You've stumbled upon the raddest site on the net.</p>
-    <img src="https://media.giphy.com/media/l41lFw057lAJQMwg0/giphy.gif" class="gif" alt="Cool GIF">
-    
-    <p>Check out our weird stuff:</p>
-    <ul style="list-style: none; padding: 0;">
-      <li><a href="#">🔗 Strange News</a></li>
-      <li><a href="#">🔗 Glitch Gallery</a></li>
-      <li><a href="#">🔗 About NEWSYNC</a></li>
-      <li><a href="#">🔗 Sign the Guestbook!</a></li>
-    </ul>
-  </div>
+        <div id="status" class="status"></div>
 
-  <div class="counter">
-    <p>You are visitor #<span id="visitor-number">???</span> to this page!</p>
-  </div>
+        <div id="uploadedInfo" class="uploaded-info">
+            <h2>Uploaded Game: <span id="gameTitle"></span></h2>
+            <div>
+                <strong>Sprite Sheet:</strong>
+                <img id="spriteSheetPreview" src="" alt="Sprite Sheet">
+            </div>
+            <div>
+                <strong>Thumbnail:</strong>
+                <img id="thumbnailPreview" src="" alt="Thumbnail">
+            </div>
+            <div class="links">
+                <a id="spriteLink" href="" target="_blank">View Sprite Sheet</a><br>
+                <a id="thumbnailLink" href="" target="_blank">View Thumbnail</a>
+            </div>
+        </div>
+    </div>
 
-  <script>
-    // Fake visitor count generator for nostalgia
-    document.getElementById('visitor-number').textContent = Math.floor(1000 + Math.random() * 9000);
-  </script>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const gameName = document.getElementById('gameName').value;
+            const spriteSheet = document.getElementById('spriteSheet').files[0];
+            const thumbnail = document.getElementById('thumbnail').files[0];
+
+            const formData = new FormData();
+            formData.append('image', spriteSheet);
+            formData.append('key', '570475b637354a86bd9b4cc766cb891e');
+            
+            let spriteSheetUrl = '';
+            try {
+                const spriteSheetResponse = await fetch('https://api.imgbb.com/1/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const spriteSheetData = await spriteSheetResponse.json();
+                if (spriteSheetData.success) {
+                    spriteSheetUrl = spriteSheetData.data.url;
+                } else {
+                    throw new Error('Sprite sheet upload failed');
+                }
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error uploading sprite sheet: ' + error.message;
+                return;
+            }
+
+            const thumbnailFormData = new FormData();
+            thumbnailFormData.append('image', thumbnail);
+            thumbnailFormData.append('key', '570475b637354a86bd9b4cc766cb891e');
+            
+            let thumbnailUrl = '';
+            try {
+                const thumbnailResponse = await fetch('https://api.imgbb.com/1/upload', {
+                    method: 'POST',
+                    body: thumbnailFormData
+                });
+                const thumbnailData = await thumbnailResponse.json();
+                if (thumbnailData.success) {
+                    thumbnailUrl = thumbnailData.data.url;
+                } else {
+                    throw new Error('Thumbnail upload failed');
+                }
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error uploading thumbnail: ' + error.message;
+                return;
+            }
+
+            document.getElementById('uploadedInfo').style.display = 'block';
+            document.getElementById('gameTitle').textContent = gameName;
+            document.getElementById('spriteSheetPreview').src = spriteSheetUrl;
+            document.getElementById('thumbnailPreview').src = thumbnailUrl;
+            document.getElementById('spriteLink').href = spriteSheetUrl;
+            document.getElementById('thumbnailLink').href = thumbnailUrl;
+
+            document.getElementById('status').textContent = '';
+        });
+    </script>
 
 </body>
 </html>
